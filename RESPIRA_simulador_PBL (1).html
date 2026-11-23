@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RESPIRA | Simulador de presión y esfuerzo</title>
+<style>
+:root{--bg:#08111f;--panel:#101e30;--panel2:#14263b;--line:#29415d;--text:#edf5ff;--muted:#9bb0c8;--cyan:#55d6e8;--blue:#6da9ff;--orange:#ffb45e;--green:#6ee0ad}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#17334b 0,#08111f 42%);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+header{padding:22px clamp(16px,4vw,48px) 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{letter-spacing:4px;font-size:13px;color:var(--cyan);font-weight:700}.sub{color:var(--muted);font-size:12px;margin-top:6px}
+main{max-width:1180px;margin:auto;padding:22px clamp(14px,3vw,32px) 42px}
+h1{font-size:clamp(25px,4vw,42px);margin:8px 0}.lead{color:var(--muted);max-width:760px;line-height:1.5}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+button{background:#14263b;color:var(--text);border:1px solid var(--line);padding:11px 15px;border-radius:9px;font-weight:700;cursor:pointer}
+button.active,button.primary{background:#17475a;border-color:var(--cyan);color:#eaffff}
+button:focus{outline:2px solid var(--cyan);outline-offset:2px}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.card{background:linear-gradient(145deg,#12243a,#0d1929);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+.card h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.scene{min-height:290px;display:grid;place-items:center;background:linear-gradient(180deg,#0c1a2b,#101f32);border:1px solid #243d57;border-radius:13px;position:relative;overflow:hidden}
+.body{width:190px;height:235px;position:relative;border:3px solid #63809c;border-radius:80px 80px 45px 45px;background:linear-gradient(90deg,#1a344d,#102239);display:flex;justify-content:center;align-items:center}
+.lungs{display:flex;gap:9px;align-items:center;margin-top:12px}.lung{width:54px;height:95px;border:2px solid var(--cyan);border-radius:55% 45% 48% 52%;background:radial-gradient(ellipse at center,#2d8a9a66,#16364a);transition:all .5s}
+.lung.right{border-radius:45% 55% 52% 48%}.trachea{position:absolute;width:9px;height:48px;background:#82c7d2;top:34px;border-radius:8px}.diaphragm{position:absolute;width:112px;height:24px;border-bottom:3px solid var(--orange);border-radius:50%;bottom:39px;transition:all .5s}
+.breath-label{position:absolute;bottom:12px;color:var(--muted);font-size:12px;letter-spacing:1px}
+.metric{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #263c54}.metric:last-child{border:0}.metric strong{font-size:22px}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.bar{height:10px;background:#24394e;border-radius:20px;overflow:hidden;margin:8px 0 14px}.bar span{display:block;height:100%;width:40%;background:var(--cyan);border-radius:20px;transition:width .5s}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.stat{background:#0d1b2b;border:1px solid #263c54;border-radius:11px;padding:12px}.stat small{color:var(--muted);display:block;font-size:11px}.stat b{font-size:21px;display:block;margin-top:5px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #263c54}th{color:var(--muted);font-weight:600}td{font-variant-numeric:tabular-nums}
+.chart{display:flex;align-items:end;gap:20px;height:180px;padding:14px 20px 0;border-bottom:1px solid var(--line)}.barcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:7px}.barcol i{display:block;width:min(70px,75%);border-radius:8px 8px 0 0;background:var(--orange);min-height:3px}.barcol.b i{background:var(--cyan)}.barcol b{font-size:15px}.barcol small{color:var(--muted);text-align:center}
+.hidden{display:none}.notice{border-left:3px solid var(--orange);padding:10px 13px;background:#2a241b;color:#f8dfbd;border-radius:0 8px 8px 0;font-size:12px;line-height:1.5;margin-top:14px}
+footer{margin-top:20px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.statgrid{grid-template-columns:1fr 1fr}.scene{min-height:270px}header{align-items:flex-start}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">PBL / FÍSICA / GRADO 10°</div><div class="sub">SIMULADOR EDUCATIVO · RESPIRACIÓN Y ESFUERZO</div></div><div class="sub">PROYECTO INTERDISCIPLINARIO</div></header>
+<main>
+<h1>RESPIRA</h1>
+<p class="lead">¿Cómo influye la forma de respirar durante un esfuerzo muscular? Explora dos patrones de respiración, revisa los datos del equipo y conecta la experiencia con los conceptos de presión y fluidos.</p>
+<nav>
+<button class="active" data-tab="sim">01 · Simulación</button><button data-tab="data">02 · Datos del equipo</button><button data-tab="physics">03 · Física</button>
+</nav>
+<section id="sim">
+<div class="grid">
+<div class="card">
+<h2>Modelo conceptual del torso</h2>
+<div class="scene">
+<div class="body"><div class="trachea"></div><div class="lungs"><div class="lung" id="leftLung"></div><div class="lung right" id="rightLung"></div></div><div class="diaphragm" id="diaphragm"></div></div>
+<div class="breath-label" id="sceneLabel">RESPIRACIÓN CONTROLADA</div>
+</div>
+<div class="controls"><button class="primary" id="hold">A · Retener el aire</button><button id="exhale">B · Exhalar progresivamente</button></div>
+<p class="muted" id="sceneText">Selecciona un escenario para ver una representación conceptual. La animación ilustra el patrón respiratorio; no mide presión dentro del cuerpo.</p>
+</div>
+<div class="card">
+<h2>Indicadores del modelo</h2>
+<div class="metric"><span class="muted">Patrón seleccionado</span><strong id="pattern" style="font-size:16px">Controlado</strong></div>
+<div class="metric"><span class="muted">Movimiento del aire</span><strong id="air" style="font-size:16px">Continuo</strong></div>
+<div class="metric"><span class="muted">Estabilidad del tronco</span><strong id="stability" style="font-size:16px">Requiere control</strong></div>
+<div style="margin-top:16px"><div class="muted">Representación visual del flujo de aire</div><div class="bar"><span id="airbar"></span></div></div>
+<div class="notice">Este simulador es una representación didáctica, no un modelo médico. No calcula presión arterial ni predice lesiones.</div>
+</div>
+</div>
+</section>
+<section id="data" class="hidden">
+<div class="card">
+<h2>Resultados registrados por el equipo</h2>
+<p class="muted">Frecuencia cardíaca en pulsaciones por minuto (ppm), según la tabla del proyecto.</p>
+<div class="statgrid">
+<div class="stat"><small>Promedio en reposo</small><b>71,75</b><small>ppm</small></div>
+<div class="stat"><small>Después del Test A</small><b>122,75</b><small>ppm · retención</small></div>
+<div class="stat"><small>Después del Test B</small><b>101,5</b><small>ppm · exhalación</small></div>
+</div>
+<h2 style="margin-top:24px">Comparación de frecuencia cardíaca promedio</h2>
+<div class="chart">
+<div class="barcol"><b>71,75</b><i style="height:48%"></i><small>Reposo</small></div>
+<div class="barcol"><b>122,75</b><i style="height:82%"></i><small>Test A<br>Retener</small></div>
+<div class="barcol b"><b>101,5</b><i style="height:68%"></i><small>Test B<br>Exhalar</small></div>
+</div>
+<h2 style="margin-top:25px">Datos individuales</h2>
+<div style="overflow-x:auto"><table><thead><tr><th>Integrante</th><th>Reposo</th><th>Test A</th><th>Test B</th></tr></thead><tbody>
+<tr><td>Santiago Gallego</td><td>74</td><td>122</td><td>107</td></tr>
+<tr><td>Diego Palacios</td><td>76</td><td>131</td><td>102</td></tr>
+<tr><td>Juan Diego Fernández</td><td>65</td><td>110</td><td>92</td></tr>
+<tr><td>Santiago Castellanos</td><td>72</td><td>128</td><td>105</td></tr>
+</tbody></table></div>
+<div class="notice">La prueba registró pulsaciones, no presión arterial. Por eso, los datos permiten comparar la respuesta del ritmo cardíaco en esta actividad, pero no demostrar directamente que la presión arterial bajó.</div>
+</div>
+</section>
+<section id="physics" class="hidden">
+<div class="grid">
+<div class="card"><h2>01 · Presión</h2><p class="muted">La presión es la fuerza aplicada por unidad de área.</p><div style="font-size:28px;text-align:center;padding:20px;color:var(--cyan)">P = F / A</div><p class="muted">En un fluido, la presión puede variar según las fuerzas aplicadas y las condiciones del sistema.</p></div>
+<div class="card"><h2>02 · Principio de Pascal</h2><p class="muted">Un cambio de presión aplicado a un fluido confinado se transmite a todos los puntos del fluido y a las paredes del recipiente.</p><div style="font-size:28px;text-align:center;padding:20px;color:var(--cyan)">ΔP = F / A</div><p class="muted">Una jeringa con agua puede ayudar a ilustrar cómo se transmite presión en un fluido confinado.</p></div>
+</div>
+<div class="card" style="margin-top:16px"><h2>Conclusión del equipo</h2><p style="line-height:1.65">En nuestra prueba de sentadilla estática de 20 segundos, el promedio de frecuencia cardíaca posterior fue mayor en el Test A (retener la respiración) que en el Test B (exhalar de forma controlada). Los resultados sugieren una diferencia en la respuesta cardíaca durante esta actividad. Sin embargo, el grupo fue pequeño y no se midió directamente la presión arterial, por lo que se necesitan más pruebas para sacar conclusiones sobre ella.</p></div>
+</section>
+<footer>Basado en el documento de trabajo del equipo · PBL de Física · Profesor Larry Charris. Simulación conceptual para fines educativos; no sustituye mediciones fisiológicas ni recomendaciones médicas.</footer>
+</main>
+<script>
+const tabs=[...document.querySelectorAll('nav button')];
+tabs.forEach(b=>b.addEventListener('click',()=>{tabs.forEach(x=>x.classList.toggle('active',x===b));['sim','data','physics'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==b.dataset.tab));}));
+const setMode=(mode)=>{
+ const hold=mode==='hold';
+ document.getElementById('leftLung').style.transform=hold?'scale(.88,.94)':'scale(1.08,1.05)';
+ document.getElementById('rightLung').style.transform=hold?'scale(.88,.94)':'scale(1.08,1.05)';
+ document.getElementById('diaphragm').style.bottom=hold?'34px':'48px';
+ document.getElementById('sceneLabel').textContent=hold?'RETENCIÓN DEL AIRE':'EXHALACIÓN PROGRESIVA';
+ document.getElementById('pattern').textContent=hold?'Retención':'Exhalación controlada';
+ document.getElementById('air').textContent=hold?'Interrumpido':'Salida gradual';
+ document.getElementById('stability').textContent=hold?'No se evalúa aquí':'Requiere control';
+ document.getElementById('airbar').style.width=hold?'5%':'65%';
+ document.getElementById('sceneText').textContent=hold?'Representación conceptual: se pausa el flujo de aire. La animación no representa una medición real de presión intratorácica.':'Representación conceptual: el aire sale de manera gradual. La animación no representa una medición real de presión intratorácica.';
+ document.getElementById('hold').classList.toggle('primary',hold);
+ document.getElementById('exhale').classList.toggle('primary',!hold);
+};
+document.getElementById('hold').addEventListener('click',()=>setMode('hold'));
+document.getElementById('exhale').addEventListener('click',()=>setMode('exhale'));
+</script>
+</body></html>
